@@ -94,7 +94,10 @@ int execute(char** args){
 	}
 
 	if (p == 0){ // child
-		execvp(*(args), args);
+		if(execvp(*(args), args) == -1){
+			perror("C_Shell");
+		}
+		exit(-1);
 	}else{ // parent
 		while(wait(NULL) != -1){}
 		//printf("\n");
