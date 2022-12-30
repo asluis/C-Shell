@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 void shell_loop();
 char* read_line();
-char ** split_line(char* line);
+char** split_line(char* line);
+int execute(char** args);
 
 int main(int argc, char **argv) {
     shell_loop();
@@ -69,7 +71,7 @@ char** split_line(char* line){
         *(lines + pos) = token;
         pos++;
 
-        if(pos >= size){ // dynamically reallocating memory if size is too small for list of tokens.
+        if(pos + 1 >= size){ // dynamically reallocating memory if size is too small for list of tokens.
             size += 32;
             lines = (char**) realloc(lines, sizeof(char*) * size);
             if(!lines){
@@ -83,8 +85,24 @@ char** split_line(char* line){
     return lines;
 }
 
-void shell_loop(){
+int execute(char** args){
+	int p = fork();
+	
+	if(p < 0){
+		printf("Error forking!\n");
+		exit(-1);
+	}
 
+	if (p == 0){ // child
+		execvp(*(args), args);
+	}else{ // parent
+		while(wait(NULL) != -1){}
+		//printf("\n");
+	}
+	return 1;
+}
+
+void shell_loop(){
     char *line;
     char **args;
     int status;
@@ -93,7 +111,7 @@ void shell_loop(){
         printf("> ");
         line = read_line();
         args = split_line(line);
-        //status = execute(args);
+        status = execute(args);
 
         free(line);
         free(args);
