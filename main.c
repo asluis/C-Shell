@@ -7,6 +7,7 @@ void shell_loop();
 char* read_line();
 char** split_line(char* line);
 int execute(char** args);
+int handleBuiltIn(char** args);
 
 int main(int argc, char **argv) {
     shell_loop();
@@ -105,6 +106,20 @@ int execute(char** args){
 	return 1;
 }
 
+int handleBuiltIn(char** args){
+	if(strcmp(*(args), "help") == 0){
+		printf("This is a shell program written in C by Luis Alvarez Sanchez.\nEnter 'exit' to exit.\n");
+		return -1;
+	} else if(strcmp(*(args), "exit") == 0){
+		exit(0);
+		return -1;
+	} else if(strcmp(*(args),"cd") == 0){
+		chdir(*(args + 1));
+		return -1;
+	}
+	return 0;
+}
+
 void shell_loop(){
     char *line;
     char **args;
@@ -114,8 +129,11 @@ void shell_loop(){
         printf("> ");
         line = read_line();
         args = split_line(line);
+	if(handleBuiltIn(args) == -1){
+		status = 2;
+		continue;
+	}
         status = execute(args);
-
         free(line);
         free(args);
     } while(status);
